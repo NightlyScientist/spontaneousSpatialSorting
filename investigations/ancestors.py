@@ -37,16 +37,12 @@ basePath = args.basePath
 # read csv from path
 df = parameterTable(basePath)
 
-print(df.basePath.values[104])
 # %%
-print(df.basePath.values[104])
-# %%
-#reload(ancestorTracker)
-sample_path = df.basePath.values[104]
+reload(ancestorTracker)
+sample_path = df.basePath.values[3]
 trajectories = ancestorTracker.fetch_trajectories(sample_path)
 
 # %%
-print(sample_path)
 def color_map(traj, option, cmap="coolwarm"):
     cm = get_cmap(cmap)
     colors = None
@@ -68,6 +64,7 @@ def color_map(traj, option, cmap="coolwarm"):
         colors = cm(traj.radial)
     return cm, colors, vrange
 
+
 def apply_colorbar(ax, cm, vrange):
     v_min, v_max = vrange
     norm = mpl.colors.Normalize(vmin=v_min, vmax=v_max)
@@ -75,19 +72,9 @@ def apply_colorbar(ax, cm, vrange):
     divider = make_axes_locatable(ax)
     colorbar_axes = divider.append_axes("right", size="5%", pad=0.1)
     cb = plt.colorbar(sm, cax=colorbar_axes, orientation="vertical")
-
-    # Create more ticks and set them on the colorbar
-    num_ticks = 6  # Adjust the number of ticks as needed
-    ticks = np.linspace(v_min, v_max, num_ticks)
-    cb.set_ticks(ticks)
-
-    # Format tick labels to 1 significant figure
-    cb.set_ticklabels([f"{tick:.1f}" for tick in ticks])
-
-    # Set larger tick label size
-    cb.ax.tick_params(labelsize=16)  # Adjust label size as needed
-
+    cb.set_ticks([v_min, v_max])
     return cb
+
 
 def sample_image(ax, trajectories, option="radial", break_point=25):
     counter = 0
@@ -103,7 +90,6 @@ def sample_image(ax, trajectories, option="radial", break_point=25):
         l = 6 * R * np.ones(x.size)
         snaps.iterateRods(ax, colors, x, y, ex, ey, l, None, R, resp=0.01)
         ax.scatter(x, y, c=colors, s=1)
-        ax.set_aspect('equal', adjustable='box')
 
         if counter > break_point:
             break
@@ -111,19 +97,22 @@ def sample_image(ax, trajectories, option="radial", break_point=25):
     return cm, vrange
 
 
-fig, (ax, sub) = plt.subplots(ncols=2, figsize=(20, 20))
+fig, (ax, sub) = plt.subplots(ncols=2, figsize=(20, 10))
 
 cm, vrange = sample_image(ax, trajectories, "front", break_point=100)
 cb = apply_colorbar(ax, cm, vrange)
 
-# ... [Subsequent Code]
+opts, times = DataModel.extract_times(sample_path)
+_data, _ = ancestorTracker.fetch_data(sample_path, times)
+norm = mpl.colors.Normalize(vmin=0, vmax=1)
+c = get_cmap("coolwarm")(norm(_data.color2))
+
+sub.scatter(_data.x, _data.y, s=2, c=c)
 
 cb.set_label("Radial Alignment", fontsize=20)
 ax.set_ylabel("y", fontsize=20)
 ax.set_xlabel("x", fontsize=20)
-
 plt.show()
-
 
 
 # %%

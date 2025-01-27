@@ -50,9 +50,18 @@ def vorticity(xg, yg, Q11, Q12, vx, vy):
 
 
 def fieldSnapshot(xg, yg, Q11, Q12, vx, vy, xp, yp, streamers=False):
-
     # .director and nematic order parameter
     S, nx, ny = get_field(xg, yg, Q11, Q12)
+
+    # Define a threshold for the nematic order parameter to mask the colony
+    threshold = 0.01  # Adjust as necessary, based on your data
+    mask = S > threshold  # Create a mask based on the nematic order parameter
+    
+    # Apply the mask to the x, y, nx, ny fields
+    xg_masked = xg[mask]
+    yg_masked = yg[mask]
+    nx_masked = nx[mask]
+    ny_masked = ny[mask]
 
     xi = np.linspace(xg.min(), xg.max(), 100)
     yi = np.linspace(yg.min(), yg.max(), 100)
@@ -71,7 +80,8 @@ def fieldSnapshot(xg, yg, Q11, Q12, vx, vy, xp, yp, streamers=False):
         cax=colorbar_axes, mappable=im, label="nematic order parameter $S$"
     )
 
-    ax.quiver(xg, yg, nx, ny, pivot="mid", scale=60.0, headaxislength=0, color="black")
+    # Plot the nematic field only inside the colony (apply mask to nx, ny)
+    ax.quiver(xg_masked, yg_masked, nx_masked, ny_masked, pivot="mid", scale=60.0, headaxislength=0, color="black")
 
     tmax = np.hypot(xp, yp).max()
     ax.set_xlim([-tmax, tmax])
@@ -94,9 +104,9 @@ def fieldSnapshot(xg, yg, Q11, Q12, vx, vy, xp, yp, streamers=False):
     sub.set_ylim([-tmax, tmax])
 
     fltr = np.where(np.hypot(neg_x, neg_y) < tmax)
-    ax.scatter(neg_x[fltr], neg_y[fltr], color="red", s=100, marker="^")
+    ax.scatter(neg_x[fltr], neg_y[fltr], color="yellow", s=100, marker="^")
     fltr = np.where(np.hypot(pos_x, pos_y) < tmax)
-    ax.scatter(pos_x[fltr], pos_y[fltr], color="blue", s=100, marker="2")
+    ax.scatter(pos_x[fltr], pos_y[fltr], color="lime", s=100, marker="2")
 
     vabs = np.sqrt(vx * vx + vy * vy)
 
@@ -107,12 +117,24 @@ def fieldSnapshot(xg, yg, Q11, Q12, vx, vy, xp, yp, streamers=False):
     )
 
     if streamers:
-        Uth = interpolate.griddata((xg, yg), vx, (X, Y), method="linear")
-        Vth = interpolate.griddata((xg, yg), vy, (X, Y), method="linear")
+        # Apply the mask to velocity components
+        vx_masked = np.where(mask, vx, np.nan)
+        vy_masked = np.where(mask, vy, np.nan)
+
+        # Interpolate the masked velocity components onto the grid
+        Uth = interpolate.griddata((xg, yg), vx_masked, (X, Y), method="linear")
+        Vth = interpolate.griddata((xg, yg), vy_masked, (X, Y), method="linear")
+
+        # Plot the streamlines, limiting their extent within the colony
         sub.streamplot(
-            X, Y, Uth, Vth, linewidth=1.0, density=4.0, color="black", arrowsize=1.0
+            X, Y, Uth, Vth, 
+            linewidth=1.0, density=4.0, color="black", arrowsize=1.0, 
+            maxlength=1.0  # Adjust this value to control the streamline length
         )
+
     return fig, ax, sub
+
+
 
 
 @jit(nopython=True, fastmath=True)

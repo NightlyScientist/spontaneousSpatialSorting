@@ -4,10 +4,6 @@ from tools.dataAPI.datamodel import DataModel
 import alphashape
 from scipy.spatial import KDTree
 from numba import jit
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 
 class AncestorHistory:
@@ -34,91 +30,54 @@ def map_allele_to_population(dataPath, times):
     alleleMapping = dict()
     for i in range(data.l.size):
         alleleMapping[data.color[i]] = data.color2[i]
+    # return np.array([alleleMapping[a] for a in allele])
     return alleleMapping
 
 
-def fetch_trajectories(dataPath, alpha=1.3):
+def fetch_trajectories(dataPath, alpha=0.2):
     times = DataModel.extract_times(dataPath)[1]
     boundary = fetch_boundary_cells(dataPath, times, alpha=alpha)
-    
-    # **Identify Non-Boundary Cells**
-    ref_data, indx = fetch_data(dataPath, times)
-    all_cells = np.arange(len(ref_data.x))
-    non_boundary = np.setdiff1d(all_cells, boundary)
-    
-    # Limit to 1000 random non-boundary cells
-    if len(non_boundary) > 1000:
-        non_boundary = np.random.choice(non_boundary, 1000, replace=False)
-    
-    logging.info(f"Total cells: {len(all_cells)}, Boundary cells: {len(boundary)}, Non-boundary cells: {len(non_boundary)}")
-    
-    # **Use Non-Boundary Cells for Initial Snapshot**
-    history = create_initial_snapshot(dataPath, times, non_boundary)
+    history = create_intial_snapshot(dataPath, times, boundary)
     fetch_history(dataPath, times, history)
     alleleMapping = map_allele_to_population(dataPath, times)
     return conform(history, alleleMapping)
 
 
-# The rest of the code remains the same.
-
-
-
 def conform(history, alleleMapping):
     trajectories = []
     keys = sorted(history.keys(), reverse=True)
-    logging.info(f"Processing {len(history[keys[0]])} trajectories.")
-    
     for ith_cell in range(len(history[keys[0]])):
-        # Initialize arrays
-        x = np.empty(len(keys))
-        y = np.empty(len(keys))
-        ex = np.empty(len(keys))
-        ey = np.empty(len(keys))
-        r_order = np.empty(len(keys))
-        allele = np.empty(len(keys), dtype=object)  # Use dtype=object for strings
-        l = np.empty(len(keys))
-        t = np.empty(len(keys))
-        d_f = np.empty(len(keys))
+        x, y, ex, ey, r_order, allele, l, t, d_f = (
+            np.empty(len(keys)),
+            np.empty(len(keys)),
+            np.empty(len(keys)),
+            np.empty(len(keys)),
+            np.empty(len(keys)),
+            np.empty(len(keys)),
+            np.empty(len(keys)),
+            np.empty(len(keys)),
+            np.empty(len(keys)),
+        )
+        for k in keys:
+            x[k] = history[k][ith_cell][1]
+            y[k] = history[k][ith_cell][2]
+            ex[k] = history[k][ith_cell][3]
+            ey[k] = history[k][ith_cell][4]
+            r_order[k] = history[k][ith_cell][9]
+            allele[k] = history[k][ith_cell][6]
+            l[k] = history[k][ith_cell][5]
+            t[k] = history[k][ith_cell][10]
+            d_f[k] = history[k][ith_cell][11]
 
-        skip_cell = False  # Flag to skip if any snapshot is missing
-
-        for k_idx, k in enumerate(keys):
-            cell = history[k][ith_cell]
-            if cell is None:
-                logging.warning(f"Missing data for cell {ith_cell} at time {k}. Skipping this trajectory.")
-                skip_cell = True
-                break  # Skip this trajectory as it has missing data
-            if len(cell) != 12:
-                logging.warning(f"cell_data[{ith_cell}] at time {k} has {len(cell)} elements instead of 12. Skipping this trajectory.")
-                skip_cell = True
-                break
-            # **Unpack with 12 Elements**
-            index, x_val, y_val, _, _, _, _, _, _, _, _, _ = cell
-
-            x[k_idx] = x_val
-            y[k_idx] = y_val
-            ex[k_idx] = cell[3]
-            ey[k_idx] = cell[4]
-            r_order[k_idx] = cell[9]
-            allele[k_idx] = cell[6]
-            l[k_idx] = cell[5]
-            t[k_idx] = cell[10]
-            d_f[k_idx] = cell[11]
-
-        if skip_cell:
-            continue  # Skip this trajectory due to missing data
-
-        population_label = alleleMapping.get(allele[0], "Unknown")
+        population_label = alleleMapping[allele[0]]
         trajectories.append(
             Trajectory(x, y, ex, ey, l, allele, r_order, t, d_f, population_label)
         )
-    
-    logging.info(f"Generated {len(trajectories)} trajectories.")
     return trajectories
 
 
 def santize_history(history):
-    # Check for duplicate trajectories
+    # check for duplicate trejectories
     pass
 
 
@@ -127,12 +86,12 @@ def fetch_data(dataPath, times, index=None):
     return Measurements(dataPath=dataPath, time=times[indx]), indx
 
 
-def fetch_boundary_cells(dataPath, times, alpha=1.3):
+def fetch_boundary_cells(dataPath, times, alpha=0.2):
     ref_data, indx = fetch_data(dataPath, times)
 
-    # Construct alpha shape
+    # construct alpha shape
     points = np.column_stack((ref_data.x, ref_data.y))
-    alpha_shape = alphashape.alphashape(points, alpha=alpha)
+    alpha_shape = alphashape.alphashape(points, alpha=0.2)
 
     # Extract boundary points from alpha shape
     coords = np.array(alpha_shape.exterior.coords.xy)
@@ -144,20 +103,19 @@ def fetch_boundary_cells(dataPath, times, alpha=1.3):
     radius = 0.5
     closest_points = kdtree.query_ball_point(coords.T, radius)
 
-    # Collect unique boundary point indices
+    # Print the indices of the closest points
     boundary_points = []
     for nbors in closest_points:
         for i in nbors:
             boundary_points.append(i)
     boundary_points = np.sort(np.unique(boundary_points))
-    logging.info(f"Identified {len(boundary_points)} boundary cells.")
     return boundary_points
 
 
-def create_initial_snapshot(dataPath, times, cell_indices):
+def create_intial_snapshot(dataPath, times, boundary_points):
     ref_data, indx = fetch_data(dataPath, times)
 
-    # Calculate radial alignment
+    # not optimal, but calculate measures here
     radial = ref_data.radial_alignment()
 
     time_snapshots = dict()
@@ -175,7 +133,7 @@ def create_initial_snapshot(dataPath, times, cell_indices):
             radial[i],
             ref_data.time,
         ]
-        for i in cell_indices
+        for i in boundary_points
     ]
 
     boundary_coords = fetch_boundary_coords(dataPath, times, indx)
@@ -183,12 +141,9 @@ def create_initial_snapshot(dataPath, times, cell_indices):
     y = np.array([cell[2] for cell in cell_data])
     distances_front = perpendicular_distance(boundary_coords, x, y)
     for i in range(len(cell_data)):
-        cell_data[i].append(distances_front[i])  # Now 12 elements
-        if len(cell_data[i]) != 12:
-            logging.warning(f"Initial snapshot cell_data[{i}] has {len(cell_data[i])} elements instead of 12.")
-    
+        cell_data[i].append(distances_front[i])
+
     time_snapshots[indx] = cell_data
-    logging.info(f"Created initial snapshot with {len(cell_data)} cells.")
     return time_snapshots
 
 
@@ -208,17 +163,53 @@ def fetch_radii_vs_time(dataPath):
 def fetch_boundary_coords(dataPath, times, index):
     current_data, _ = fetch_data(dataPath, times, index)
     points = np.column_stack((current_data.x, current_data.y))
-    alpha_shape = alphashape.alphashape(points, alpha=1.3)
+    alpha_shape = alphashape.alphashape(points, alpha=0.2)
     coords = np.array(alpha_shape.exterior.coords.xy)
     return coords
 
 
 def perpendicular_distance(coords, x, y):
-    # Replace with a proper perpendicular distance algorithm if needed
+    #! should be replaced with a perpdendicular distance algorithm
     distances = np.zeros(len(x), dtype=np.float64)
     kdtree = KDTree(np.column_stack((coords[0], coords[1])))
     distances, _ = kdtree.query(np.column_stack((x, y)))
     return distances
+
+
+# def get_line_intersection(p0_x, p0_y, p1_x, p1_y, p2_x, p2_y, p3_x, p3_y):
+#    s10_x = p1_x - p0_x
+#    s10_y = p1_y - p0_y
+#    s32_x = p3_x - p2_x
+#    s32_y = p3_y - p2_y
+
+#    denom = s10_x * s32_y - s32_x * s10_y
+#    if denom == 0:
+#        return -1, -1
+#        # Collinear
+
+#    denomPositive = denom > 0
+
+#    s02_x = p0_x - p2_x
+#    s02_y = p0_y - p2_y
+#    s_numer = s10_x * s02_y - s10_y * s02_x
+#    if (s_numer < 0) == denomPositive:
+#        return -1, -1
+#        # No collision
+
+#    t_numer = s32_x * s02_y - s32_y * s02_x
+#    if (t_numer < 0) == denomPositive:
+#        return -1, -1
+#        # No collision
+
+#    if ((s_numer > denom) == denomPositive) or ((t_numer > denom) == denomPositive):
+#        return -1, -1
+#        # No collision
+
+#    # Collision detected
+#    t = t_numer / denom
+#    i_x = p0_x + (t * s10_x)
+#    i_y = p0_y + (t * s10_y)
+#    return i_x, i_y
 
 
 def fetch_history(dataPath, times, time_snapshots):
@@ -228,25 +219,20 @@ def fetch_history(dataPath, times, time_snapshots):
     while start_index > 0:
         cell_data = [None for _ in range(n_cells)]
 
-        # Get most recent time snapshot
+        # get most recent time snapshot
         current = time_snapshots[start_index]
         current_data, _ = fetch_data(dataPath, times, start_index)
 
-        # Get previous time snapshot
+        # get previous time snapshot
         new_data, _ = fetch_data(dataPath, times, start_index - 1)
         radial = new_data.radial_alignment()
 
         for ith_cell in range(n_cells):
-            current_cell = current[ith_cell]
-            if current_cell is None:
-                continue  # Skip if current cell data is None
+            index, x, y, *_ = current[ith_cell]
 
-            # **Unpack with 12 Elements**
-            index, x, y, _, _, _, _, _, _, _, _, _ = current_cell
-
-            # Find ancestor in previous time snapshot
+            # find ancestor in previous time snapshot
             if index >= new_data.l.size:
-                # Scan list and find entry with matching ancestor
+                # scan list and find entry with matching ancestor
                 ancestor_candidates = find_ancestor(
                     current_data.color,
                     current_data.ancestors,
@@ -257,16 +243,15 @@ def fetch_history(dataPath, times, time_snapshots):
                 )
 
                 if len(ancestor_candidates) == 0:
-                    logging.error(f"Error finding ancestor for cell index {ith_cell} at time index {start_index}. Skipping this cell.")
-                    cell_data[ith_cell] = None  # Optionally, assign default values
-                    continue  # Skip processing this cell
+                    print("error finding ancestor.")
+                    return current_data, new_data, index
                 else:
-                    # Ensure that ancestor index is within the size of the new data
+                    # ensure that ancestor index is within the size of the new data
                     ptr = 0
                     ancestor_index = ancestor_candidates[ptr]
                     while (
                         ancestor_index >= new_data.l.size
-                        and ptr < len(ancestor_candidates) - 1
+                        and len(ancestor_candidates) >= ptr
                     ):
                         ptr += 1
                         ancestor_index = ancestor_candidates[ptr]
@@ -292,20 +277,11 @@ def fetch_history(dataPath, times, time_snapshots):
         start_index -= 1
 
         boundary_coords = fetch_boundary_coords(dataPath, times, start_index)
-        # Extract x and y only for non-None cells
-        x_coords = [cell[1] for cell in cell_data if cell is not None]
-        y_coords = [cell[2] for cell in cell_data if cell is not None]
-        x = np.array(x_coords)
-        y = np.array(y_coords)
+        x = np.array([cell[1] for cell in cell_data])
+        y = np.array([cell[2] for cell in cell_data])
         distances_front = perpendicular_distance(boundary_coords, x, y)
-        distance_idx = 0  # To track the distance_front for non-None cells
-
         for i in range(len(cell_data)):
-            if cell_data[i] is not None:
-                cell_data[i].append(distances_front[distance_idx])  # Now 12 elements
-                if len(cell_data[i]) != 12:
-                    logging.warning(f"fetch_history: cell_data[{i}] has {len(cell_data[i])} elements after appending distance_front.")
-                distance_idx += 1
+            cell_data[i].append(distances_front[i])
 
         time_snapshots[start_index] = cell_data
 
@@ -318,9 +294,9 @@ def parse_ancestors(ancestors: str):
 @jit(nopython=True)
 def _parse_ancestors(tmp):
     nm = 0
-    while nm < len(tmp) and tmp[nm] != 0:
+    while tmp[nm] != 0:
         nm += 1
-    return tmp[:nm]
+    return tmp[0:nm]
 
 
 @jit(nopython=True)
@@ -335,7 +311,7 @@ def compare_ancestors(ancestors, _ancestors):
     return overlap
 
 
-def is_candidate(ancestors, _ancestors, splits):
+def is_candiate(ancestors, _ancestors, splits):
     overlap = compare_ancestors(ancestors, _ancestors)
     return overlap >= len(ancestors) - splits
 
@@ -350,6 +326,7 @@ def find_ancestor(ids, barcodes, target_barcode, target_id, splits, target_index
     )
 
 
+# @jit(nopython=True)
 def _find_ancestor(ids, barcodes, target_barcode, target_id, splits, target_index):
     candidates = []
 
@@ -361,6 +338,6 @@ def _find_ancestor(ids, barcodes, target_barcode, target_id, splits, target_inde
         if _id != target_id:
             continue
 
-        if is_candidate(target_barcode, _ancestors, splits):
+        if is_candiate(target_barcode, _ancestors, splits):
             candidates.append(j)
     return candidates
