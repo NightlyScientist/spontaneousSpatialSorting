@@ -27,7 +27,39 @@ The simulation code can be executed on the slurm cluster by passing the --slurm 
 ## Analysis
 
 Find a collection of analysis routines in _investigations/_ directory. In particular,
-have a first look at investigations/colony.py_ to see snapshots of the colony growth. 
+have a first look at investigations/colony.py_ to see snapshots of the colony growth. This file can also be used to examine the nematic field, local heterozygosity and radial order. 
+
+In order to make videos, the *animateGrowth_smoothed.py* file should be used. To modify the videos between fit-to-frame to constant frame size, look at *tools/graphics/snapshots_smoothed.py*. 
+
+### Parameter space
+
+The file *parameter_space.py*  generates a summary table of some measurement data extracted from specified paths in a dataset. It is recommended to be run first when analyzing a dataset. 
 
 ### Spatial Sorting During Equal Division-Time Growth
-In 
+
+In order to determine the spatial distribution of cells at the periphery as a function of time, run *spatial_dist_paper.py*. To tweak the periphery threshold $w_p$, change the *distance_threshold* variable. 
+To analyze the data, look at *spatial_dist_paper.ipynb*
+
+### Radial order
+
+To reproduce the radial order parameter figures, look at *radial_order_paper.ipynb*. 
+
+### Two-point correlation function
+
+To compute the two-point correlation function, look at *correlation_10.py*. To plot the results, look at *correlation_10_paper.ipynb* especially under the log-lin heading. 
+
+### Trajectory tracking
+
+To track the trajectories of cells that end up at the periphery or in the bulk, look at *ancestors.py* for the plotting of paths, *radial_traj_slurm.py* for the computation of probabilities, and *radial_trajectory.ipynb* for the plotting of probabilities. 
+
+### Heterozygosity
+
+To compute the heterozygosity and reproduce the figures, look at *heterozygosity_paper.ipynb*. The final cells in that notebook produce the figures from the article. 
+
+### Equal Growth Rate
+
+To investigate the colony with the equal growth rate condition, 
+
+
+
+
