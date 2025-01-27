@@ -58,7 +58,7 @@ To compute the heterozygosity and reproduce the figures, look at *heterozygosity
 
 ### Equal Growth Rate
 
-To investigate the colony with the equal growth rate condition, 
+To investigate the colony with the equal growth rate condition, look at *equal_gr_investigation.ipynb*. Both normalized and unnormalized conditions are shown. 
 
 
 
