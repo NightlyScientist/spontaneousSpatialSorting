@@ -26,5 +26,8 @@ The simulation code can be executed on the slurm cluster by passing the --slurm 
 
 ## Analysis
 
-Find a collection of analysis routines in _analysis/_ directory. In particular,
-have a first look at _analysis/visuals/colony.py_ to see snapshots of the colony growth.
+Find a collection of analysis routines in _investigations/_ directory. In particular,
+have a first look at investigations/colony.py_ to see snapshots of the colony growth. 
+
+### Spatial Sorting During Equal Division-Time Growth
+In 
