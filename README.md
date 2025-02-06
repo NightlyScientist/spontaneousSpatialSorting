@@ -31,7 +31,7 @@ The simulation code can be executed on a Slurm cluster by passing the `--slurm` 
 ## Analysis
 A collection of analysis routines are in the *investigations/* directory. In particular, investigations/colony.py generates snapshots of the colony growth. This file can also be used to examine the nematic director field, local heterozygosity, and radial order.
 
-Videos can be generated using animateGrowth_smoothed.py. Smoothed animations with a dynamic or constant size of viewing window can be generated using [snapshots_smoothed](investigatins/tools/graphics/snapshots_smoothed.py).
+Videos can be generated using animateGrowth_smoothed.py. Smoothed animations with a dynamic or constant size of viewing window can be generated using [snapshots_smoothed](investigations/tools/graphics/snapshots_smoothed.py).
 
 ### Parameter space
 The file parameter_space.py generates a summary table of some measurement data extracted from specified paths in a dataset. It is recommended to be run first when analyzing a dataset.
