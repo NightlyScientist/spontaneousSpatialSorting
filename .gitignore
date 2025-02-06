@@ -1,0 +1,64 @@
+# ignore python and notebook cache files
+__pycache__
+.ipynb_checkpoints/
+
+# ignore vs code files
+.vscode/
+
+# ignore mac files
+.DS_Store
+.DS_Store/
+
+# ignore accidental home directory alias
+~
+
+# ignore media files
+*.png
+*.mp4
+*.gif
+*.png
+*.PNG
+*.jpeg
+
+# ignore log files
+*.log
+
+# ignore c compiled objects
+*.o
+*.O
+
+# ignore csv 
+*.csv
+
+# ignore everything in workarea, except template directories
+workspace/*
+!workspace/template/
+!workspace/scripts/
+!workspace/logs/
+!workspace/slurm/
+
+# ignore everything in workarea, except template directories
+workarea/*
+!workarea/template/
+!workarea/scripts/
+!workarea/logs/
+!workarea/slurm/
+
+src/base/build/
+src/base/build/*
+
+# example command to run code
+commands
+
+# rye tool automatic build deps
+*.egg-info
+
+#  trash slurm output
+*.out
+
+# env python file
+.env
+
+# project virutal environment
+.venv/
+.venv
