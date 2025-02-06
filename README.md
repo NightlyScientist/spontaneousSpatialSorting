@@ -20,7 +20,7 @@ We support simulating bacterial growth of two species of different growth rates 
 
  
 
-> python src/scripts/main.py --max_aspect_ratio aspect_ratio_1 [max_aspect_ratio_2] --growth_rate rate
+> python src/scripts/main.py --max_aspect_ratio aspect_ratio_1 [aspect_ratio_2] --growth_rate rate
  
 
 where the values in brackets are optional, and default to running the simulation with a single species if not provided.
