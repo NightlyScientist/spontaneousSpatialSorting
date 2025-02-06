@@ -7,13 +7,13 @@ import matplotlib as mpl
 from routines.parameterTable import parameterTable
 import re
 from importlib import reload
-from multiprocessing import Pool  # For parallel processing
+from multiprocessing import Pool  
 
 # Threshold for consecutive radial_order > 0.8
-radial_persistence_thresh = 10  # Adjust as needed
+radial_persistence_thresh = 10  
 reload(ancestorTracker)
 
-# Generate base paths for aspect ratios from 2 to 15
+
 base_paths = [
     f"/home/mratman1/activeMatterCommunities/workspace/simulations_eqdivtime/asp{x}"
     for x in range(2, 16)
@@ -33,7 +33,7 @@ def extract_aspect_ratios_from_path(path):
             else float(match.group(3))
         )
         
-        # Ensure that aspect ratio 10 is treated as aspect ratio 1
+        
         if asp2 == 10:
             asp2 = asp1
             asp1 = 10
@@ -49,20 +49,19 @@ def has_consecutive_radial_order(radial_order, threshold, consecutive_thresh):
 
 def calculate_probability(sample_path):
     """
-    Calculates the probability for a given sample path.
+    Calculates probability for a path.
     Returns a tuple containing the sample path, aspect ratios, and probability.
-    If extraction fails or conditions aren't met, returns None for prob.
     """
     try:
         asp1, asp2 = extract_aspect_ratios_from_path(sample_path)
     except ValueError:
-        return sample_path, None, None, None  # Include the sample_path
+        return sample_path, None, None, None  
 
-    # **Corrected Condition**: Proceed only if at least one aspect ratio is 10
+   
     if asp1 != 10 and asp2 != 10:
-        return sample_path, asp1, asp2, None  # Skip paths without aspect ratio 10
+        return sample_path, asp1, asp2, None  
 
-    # Fetch trajectories
+    
     trajectories = ancestorTracker.fetch_trajectories(sample_path)
 
     total_periphery_cells = 0
@@ -74,7 +73,7 @@ def calculate_probability(sample_path):
             if has_consecutive_radial_order(traj.radial, 0.8, radial_persistence_thresh):
                 qualified_cells += 1
 
-    # Calculate the probability
+    
     probability = (
         qualified_cells / total_periphery_cells
         if total_periphery_cells > 0
@@ -86,31 +85,29 @@ def calculate_probability(sample_path):
 def process_sample_path(sample_path):
     return calculate_probability(sample_path)
 
-# Parallel computation using Pool
+#parallelization
 def parallel_calculation(sample_paths):
-    with Pool(processes=4) as pool:  # Adjust '4' based on the number of CPU cores you want to use
+    with Pool(processes=4) as pool:  # adjust based on cluster
         results = pool.map(process_sample_path, sample_paths)
     return results
 
-# Gather sample paths from all base directories
+
 all_sample_paths = []
 for basePath in base_paths:
-    df = parameterTable(basePath)  # Adjust this to correctly gather paths
+    df = parameterTable(basePath)  
     all_sample_paths.extend(df.basePath.values)
 
-# Call the parallel computation function
+
 results = parallel_calculation(all_sample_paths)
 
-# Initialize data structure for probabilities and a list for failed paths
 probabilities_dict = {}
 failed_paths = []
 
-# Process results
 for result in results:
     sample_path, asp1, asp2, prob = result
     if asp1 is None or asp2 is None or prob is None:
         failed_paths.append(sample_path)
-        continue  # Skip if aspect ratios could not be extracted or prob is None
+        continue  
     
     if asp1 not in probabilities_dict:
         probabilities_dict[asp1] = {}
@@ -120,13 +117,12 @@ for result in results:
     
     probabilities_dict[asp1][asp2].append(prob)
 
-# Log failed paths
+
 if failed_paths:
     print("The following sample paths could not be processed and were skipped:")
     for path in failed_paths:
         print(f"- {path}")
 
-# Calculate mean and SEM probabilities for each aspect ratio of population 1 and 2
 mean_probs = {}
 sem_probs = {}
 
@@ -148,13 +144,12 @@ for asp1, asp2_dict in probabilities_dict.items():
         mean_probs[asp1][asp2] = mean
         sem_probs[asp1][asp2] = sem
 
-# Prepare data for plotting and saving to CSV
 aspect_ratios_population_1 = sorted(mean_probs.keys())
 aspect_ratios_population_2 = sorted(
     set(asp2 for asp2_dict in mean_probs.values() for asp2 in asp2_dict)
 )
 
-# Save data to CSV
+#saving 
 data_to_save = []
 for asp1 in aspect_ratios_population_1:
     for asp2, prob in mean_probs[asp1].items():
@@ -170,7 +165,7 @@ csv_file_path = "/home/mratman1/activeMatterCommunities/investigations/mean_bulk
 df_probabilities.to_csv(csv_file_path, index=False)
 print(f"Data saved to {csv_file_path}")
 
-# Plotting with error bars as shaded regions
+
 plt.figure(figsize=(12, 8))
 cmap = plt.get_cmap("viridis")
 colors = cmap(np.linspace(0, 1, len(aspect_ratios_population_1)))
@@ -206,7 +201,7 @@ for i, asp1 in enumerate(aspect_ratios_population_1):
         alpha=0.3
     )
 
-# Adding colorbar
+
 norm = mpl.colors.Normalize(
     vmin=min(aspect_ratios_population_1), 
     vmax=max(aspect_ratios_population_1)
