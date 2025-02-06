@@ -18,7 +18,8 @@ void grow() {
 
   double initial_lengths[n_active];
   for (int i = 0; i < n_active; i++) {
-    initial_lengths[i] = division_lengths[ptcl[i].label] * (1 - 0.5*drand48());
+    initial_lengths[i] =
+        division_lengths[ptcl[i].label] * (1 - 0.5 * drand48());
   }
 
   while (true) {
@@ -139,36 +140,35 @@ int two_cells() {
 
 // initialize with random cells at the center within some radius, with a ring of
 // cells
-int annulus(int start_idx) {
+int annulus(int start_idx, bool active, int label, bool grown) {
   int i = start_idx;
+  double size_factor = (grown) ? 1.0 : 0.5;
 
   // .find extreme postions of cells
   double _radius, radius = 0;
   for (int j = 0; j < n_active; j++) {
-    _radius = sqrt(pow(ptcl[j].x, 2) + pow(ptcl[j].y, 2));
+    _radius = sqrt(pow(ptcl[j].x, 2) + pow(ptcl[j].y, 2)) * systemSize;
     if (_radius > radius) radius = _radius;
   }
 
   // .add half the division length to the radius
-  radius = radius + 3 * std::max(division_lengths[0], division_lengths[1]);  // .MADE CHANGE HERE 2 to 3
+  radius = radius + thickness + .5 * std::max(division_lengths[0], division_lengths[1]);
 
   // .create ring around existing droplet
-  double delta_angle = 0.5 * division_lengths[1] / radius, angle = 0;
-  int n_steps = ceil(4 * pi * radius / division_lengths[1]);
+  double delta_angle = size_factor * division_lengths[1] / radius, angle = 0;
+  int n_steps = ceil(2 * pi * radius / division_lengths[1] / size_factor);
 
   // .update values after adjusting radius
-  radius = n_steps * division_lengths[1] / (4 * pi);
-  delta_angle = 0.5 * division_lengths[1] / radius;
+  radius = n_steps * size_factor * division_lengths[1] / (2 * pi);
+  delta_angle =  size_factor * division_lengths[1] / radius;
 
   for (i = start_idx; i < start_idx + n_steps; i++) {
-    int label = 1;
-
     angle = (i - start_idx) * delta_angle - 0.5 * delta_angle;
     double x = radius * cos(angle) * scale;
     double y = radius * sin(angle) * scale;
 
     ptcl[i].label = label;
-    ptcl[i].length = 0.5 * division_lengths[label];
+    ptcl[i].length = size_factor * division_lengths[label];
     ptcl[i].growth_rate = growth_rates[label] * (1.5 - drand48());
 
     ptcl[i].phi = angle + pi / 2;
@@ -183,9 +183,9 @@ int annulus(int start_idx) {
     ptcl[i].color = i;
     ptcl[i].color2 = label;
 
-    ptcl[i].active = TRUE;
+    ptcl[i].active = true;
 
-    if (growth_rates[label] == 0) {
+    if (growth_rates[label] == 0 || !active) {
       ptcl[i].can_grow = false;
     }
     n_active++;
@@ -278,6 +278,11 @@ void starting_cells() {
       start_index = random_cells(start_index, initial_cells);
       grow();
       annulus(start_index);
+      break;
+
+    case 3:
+      random_cells(0, initial_cells, -1);
+      grow();
       break;
 
     default:

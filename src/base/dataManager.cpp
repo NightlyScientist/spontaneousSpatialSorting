@@ -7,7 +7,7 @@
 #include "mdmain.h"
 
 void read_parameters(int argc, char *argv[]) {
-  if (argc < 19) {
+  if (argc < 20) {
     printf("insufficient args provided.\n");
     exit(0);
   }
@@ -39,10 +39,13 @@ void read_parameters(int argc, char *argv[]) {
     initial_type = 1;
   } else if ("annulus" == _str) {
     initial_type = 2;
+  } else if ("passive_ring" == _str) {
+    initial_type = 3;
   } else {
     initial_type = 0;
   }
 
+  annulus_start_delay = (int)atoi(argv[19]);
   initial_cells = (int)atoi(argv[16]);
   printf(" initial cells: %d\n", initial_cells);
 

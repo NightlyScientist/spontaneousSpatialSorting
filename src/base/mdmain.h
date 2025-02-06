@@ -75,6 +75,7 @@ extern int ind_group_number;
 extern int remove_token;
 extern int initial_type;
 extern int initial_cells;
+extern int annulus_start_delay;
 
 // system width
 extern double systemSize;

@@ -32,6 +32,7 @@ int ind_group_number = 0;
 int total_anscestors = 2;
 int N_removed = 0;
 int remove_token = 1;
+int annulus_start_delay;
 
 double del_t;
 double systemSize, scale;
@@ -68,10 +69,16 @@ void main_loop() {
   int save_counter = 1, stop_simulation = 0;
   double time = 0;
   int save_interval = 1;
+  bool added_annulus = (initial_type == 3) ? false : true;
 
   while (stop_simulation == 0) {
     stop_simulation = timeStep();
     time += del_t;
+
+    if (added_annulus == false && n_active > annulus_start_delay) {
+      annulus(n_active, false, 1, true);
+      added_annulus = true;
+    }
 
     periodic_boundary_condition();
     generate_linked_cell_list();
@@ -83,7 +90,7 @@ void main_loop() {
     }
 
     // if (n_active >= next_milestone) {
-    if (save_interval == frameSize){
+    if (save_interval == frameSize) {
       save_data(cycles, time);
       // save_data(save_counter, time);
       // next_milestone = (int)(n_active * 1.05);
@@ -132,13 +139,13 @@ int main(int argc, char *argv[]) {
   save_data(0, 0.0);
 
   // // start time
-  time_t l_current_t = time(NULL);
+  time_t l_current_t = time(nullptr);
   printf("starting time: %s\n", asctime(gmtime(&l_current_t)));
 
   main_loop();
 
   // end time
-  l_current_t = time(NULL);
+  l_current_t = time(nullptr);
   printf("end time: %s\n", asctime(gmtime(&l_current_t)));
 
   return 0;
