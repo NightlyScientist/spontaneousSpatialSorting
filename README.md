@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/923148635.svg)](https://doi.org/10.5281/zenodo.14827698)
+
+
 ## Agent-based simulations of growing bacterial colonies with coexisting shape phenotypes.
 This repository is asssociated with the preprint, Ratman et al., *"Spontaneous spatial sorting by cell shape in growing colonies of rod-like bacteria"* (2025), which can be found on [arXiv](https://doi.org/10.48550/arXiv.2501.11177) and [bioRxiv](https://doi.org/10.1101/2025.01.22.634274).
 
