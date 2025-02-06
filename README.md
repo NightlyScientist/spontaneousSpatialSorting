@@ -6,7 +6,7 @@ Project simulation code can be executed using, for example,
 >  python src/scripts/main.py --frame_size 100 --cores 4 --time_step 0.005 --diffusion_constant 0 --max_aspect_ratio 4 4 --initial_type uniform --max_ptcls 100 --equal_division_time --rng_seed 1 --number_experiments 1 --save_path workspace/simulations/ --recompile
  
 
-This will compile the C++ code (in src/base) and execute with the provided options. Optionally, the --recompile flag will recompile the C++ code before executing. Running with mutiple cores is done by settings --cores number_of_cores. In this example, a population of two species with growth rates {0.01, 0.02} and division lengths {1, 2} is simulated over 2000 cycles with each cycle taking 0.001 time units; data is saved every 5000 cycles.
+This will compile the C++ code (in src/base) and execute with the provided options. Optionally, the `--recompile` flag will recompile the C++ code before executing. Running with mutiple cores is done by settings `--cores` number_of_cores. In this example, a population of two species with growth rates {0.01, 0.02} and division lengths {1, 2} is simulated over 2000 cycles with each cycle taking 0.001 time units; data is saved every 5000 cycles.
 
 ## Input configuration
 To see available options that can be set as well as an explanation for each parameter, use
@@ -26,10 +26,10 @@ We support simulating bacterial growth of two species of different growth rates 
 where the values in brackets are optional, and default to running the simulation with a single species if not provided.
 
 ## Slurm execution
-The simulation code can be executed on a Slurm cluster by passing the --slurm flag to the main.py script. This option uses the slurm_main.sh script to submit and queue the code.
+The simulation code can be executed on a Slurm cluster by passing the `--slurm` flag to the main.py script. This option uses the slurm_main.sh script to submit and queue the code.
 
 ## Analysis
-A collection of analysis routines are in the investigations/ directory. In particular, investigations/colony.py generates snapshots of the colony growth. This file can also be used to examine the nematic director field, local heterozygosity, and radial order.
+A collection of analysis routines are in the *investigations/* directory. In particular, investigations/colony.py generates snapshots of the colony growth. This file can also be used to examine the nematic director field, local heterozygosity, and radial order.
 
 Videos can be generated using animateGrowth_smoothed.py. Smoothed animations with a dynamic or constant size of viewing window can be generated using [snapshots_smoothed](investigatins/tools/graphics/snapshots_smoothed.py).
 
@@ -53,3 +53,9 @@ To compute the heterozygosity and reproduce the figures, see [heterozygosity_pap
 
 ### Equal growth rate
 To investigate the colony with the equal growth rate condition, see [equal_gr_investigation.ipynb](investigations/equal_gr_investigation.ipynb). Both normalized and unnormalized conditions are shown.
+
+
+## Package Dependencies
+
+This code requires python (v3.11+) to be installed. Our Python environment is provided in [requirements.txt](requirements.txt).
+
