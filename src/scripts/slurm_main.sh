@@ -2,8 +2,7 @@
 #SBATCH --job-name=a.m.c.
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --partition=shared
-#SBATCH --mem-per-cpu=1GB
+#SBATCH --time=70:00:00
 #SBATCH --output=workspace/logs/slurm/submission_%j.log
 
 echo
@@ -35,6 +34,7 @@ parser() {
 
     rng_seed=${rng_seed:-"0"}
     save_path=${save_path:-"0"}
+    annulus_start_delay=${annulus_start_delay:-"200"}
 
     # Assign the values given by the user
     while [ $# -gt 0 ]; do
@@ -52,7 +52,7 @@ parser $@
 echo "Running your script now"
 echo
 
-./src/base/build/main.exe $cores $cycles $max_ptcls $frame_size $system_size $time_step $thickness $tracers $diffusion_constant $force_constant $initial_type $fill_fraction $recycle_cells $division_length $growth_rate $initial_cells $rng_seed $save_path
+./src/base/build/main.exe $cores $cycles $max_ptcls $frame_size $system_size $time_step $thickness $tracers $diffusion_constant $force_constant $initial_type $fill_fraction $recycle_cells $division_length $growth_rate $initial_cells $rng_seed $save_path $annulus_start_delay
 
 echo
 date
