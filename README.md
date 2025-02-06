@@ -3,10 +3,10 @@ This repository is asssociated with the preprint, Ratman et al., *"Spontaneous s
 
 Project simulation code can be executed using, for example,
 
->  python src/scripts/main.py --frame_size 5000 --cores 4 --time_step 0.001 --diffusion_constant 0 --max_aspect_ratio 4 4 --initial_type uniform --max_ptcls 1000 --equal_division_time --rng_seed 1 --number_experiments 1 --save_path workspace/simulations/ --recompile --growth_rate 0.01 0.02
+>  python src/scripts/main.py --frame_size 5000 --cores 4 --time_step 0.001 --diffusion_constant 0 --max_aspect_ratio 4 4 --initial_type uniform --max_ptcls 1000 --equal_division_time --rng_seed 1 --number_experiments 1 --save_path workspace/simulations/ --recompile --growth_rate 0.01
  
 
-This will compile the C++ code (in src/base) and execute with the provided options. Optionally, the `--recompile` flag will recompile the C++ code before executing. Running with mutiple cores is done by settings `--cores` number_of_cores. In this example code, a population of two species with growth rates {0.01, 0.02} and division lengths {4, 4} is simulated until 1000 cells are generated, with each cycle taking 0.001 time units; data is saved every 5000 cycles. Note that if `--number_experiments`, which determines the number of simulations of different seeds to be executed, is larger than 1, simulations will be sent to a slurm scheduler. The `--equal_division_time` flag ensures that both populations have the same division time by modifying the growth rate of the second population.
+This will compile the C++ code (in src/base) and execute with the provided options. Optionally, the `--recompile` flag will recompile the C++ code before executing. Running with mutiple cores is done by settings `--cores` number_of_cores. In this example code, a population of two species with growth rate 0.01 and division lengths {4, 4} is simulated until 1000 cells are generated, with each cycle taking 0.001 time units; data is saved every 5000 cycles. Note that if `--number_experiments`, which determines the number of simulations of different seeds to be executed, is larger than 1, simulations will be sent to a slurm scheduler. The `--equal_division_time` flag ensures that both populations have the same division time by modifying the growth rate of the second population, otherwise both populations are given the same growth rate set by `--growth_rate`.
 
 ## Input configuration
 To see available options that can be set as well as an explanation for each parameter, use
@@ -20,7 +20,7 @@ We support simulating bacterial growth of two species of different growth rates 
 
  
 
-> python src/scripts/main.py --max_aspect_ratio aspect_ratio_1 [max_aspect_ratio_2] --growth_rate rate_1 [rate_2]
+> python src/scripts/main.py --max_aspect_ratio aspect_ratio_1 [max_aspect_ratio_2] --growth_rate rate
  
 
 where the values in brackets are optional, and default to running the simulation with a single species if not provided.
