@@ -27,37 +27,18 @@ __pycache__
 *.o
 *.O
 
-# ignore csv 
+# ignore data files
 *.csv
+*.parquet
 
 # ignore everything in workarea, except template directories
-workspace/*
-!workspace/template/
-!workspace/scripts/
-!workspace/logs/
-!workspace/slurm/
-
-# ignore everything in workarea, except template directories
-workarea/*
-!workarea/template/
-!workarea/scripts/
-!workarea/logs/
-!workarea/slurm/
-
-src/base/build/
-src/base/build/*
+workspace/
 
 # example command to run code
 commands
 
-# rye tool automatic build deps
-*.egg-info
-
 #  trash slurm output
 *.out
-
-# env python file
-.env
 
 # project virutal environment
 .venv/
