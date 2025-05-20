@@ -26,8 +26,11 @@ colorOptions = [
     "velocity",
     "length",
     "grains",
-    "flows"
+    "flows",
+    "uptake",
+    "stale"
 ]
+opts
 
 # %%
 interact(

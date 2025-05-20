@@ -28,7 +28,9 @@ parser.add_argument(
         "splits",
         "radial",
         "length",
-        "flows"
+        "flows", 
+        "uptake",
+        "stale",
     ],
 )
 args = parser.parse_args()
@@ -44,7 +46,9 @@ colorOptions = [
     "splits",
     "radial",
     "length",
-    "flows"
+    "flows",
+    "uptake",
+    "stale",
 ]
 
 if not args.colorby in colorOptions:
@@ -56,6 +60,10 @@ else:
     ext = args.colorby + "_"
 
 df = parameterTable(inputPath)
+
+if df.empty:
+    print("Warning: No experiments found in the input path. Exiting script.")
+    exit(0)
 
 msg = "image and video generation successful"
 
