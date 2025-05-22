@@ -49,6 +49,16 @@ def colorSelector(colorby, data):
         vrange = [allele.min(), allele.max()]
         values = allele / allele.max()
         cm = get_cmap("hsv")
+    elif colorby == "uptake":
+        uptake = data.gadj
+        vrange = [uptake.min(), uptake.max()]
+        values = uptake / uptake.max()
+        cm = get_cmap("inferno")
+    elif colorby == "stale":
+        uptake = 1.0 - data.stale.astype(float)
+        vrange = [0.0, 1.0]
+        values = uptake 
+        cm = get_cmap("gnuplot")
     elif colorby == "grains":
         grain_id, _, _, _ = data.grains()
         grain_new_id = grain_id
@@ -63,7 +73,7 @@ def colorSelector(colorby, data):
         cm = get_cmap("hsv")
     else:
         values = data.color2.astype(float)
-        cm = get_cmap("copper")
+        cm = get_cmap("managua")
     return cm, values, vrange
 
 
@@ -130,10 +140,6 @@ def drawRods(
         ax.set_yticks([])
 
     if imgPath != "" and saveImg:
-        F = data.force_constant
-        ax.title.set_text(
-            f"red: {data.max_aspect_ratio_1}, green:{data.max_aspect_ratio_2}, @F = {F}"
-        )
         plt.savefig(f"{imgPath}/{time}.png")
         plt.close(fig)
     else:

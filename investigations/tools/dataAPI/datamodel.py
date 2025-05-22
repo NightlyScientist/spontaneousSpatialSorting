@@ -9,7 +9,7 @@ class DataModel:
         df = pd.read_csv(f"{dataPath}/{time}.csv", header=0)
 
         # .data fields from simuation
-        keys = ["x", "y", "ex", "ey", "l", "color", "color2", "fx", "fy", "g", "splits", "id_1", "id_2", "ancestors", "ancestor"]
+        keys = ["x", "y", "ex", "ey", "l", "color", "color2", "fx", "fy", "g", "splits", "id_1", "id_2", "ancestors", "ancestor", "gadj", "stale"]
         for key in keys:
             setattr(self, key, df[key].values)
 
