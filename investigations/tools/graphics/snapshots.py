@@ -9,6 +9,14 @@ from tools.dataModels.measurements import Measurements
 from numba import jit
 from functools import partial
 from tools.graphics.nematics import fieldSnapshot, defects_from_Q
+from matplotlib.colors import LinearSegmentedColormap
+
+brown_rgb = (89/255, 168/255, 217/255)   # RGB for #994F00
+light_blue_rgb = (127/255, 73/255, 23/255)  # RGB for #006CD1# Define a custom colormap that transitions from brown to light blue
+
+brown_to_light_blue_cb_friendly = LinearSegmentedColormap.from_list(
+    "brown_lightblue_cb", [brown_rgb, light_blue_rgb]
+) # RGB for #56B4E9 (colorblind-friendly light blue)
 
 
 def colorSelector(colorby, data):
@@ -73,7 +81,8 @@ def colorSelector(colorby, data):
         cm = get_cmap("hsv")
     else:
         values = data.color2.astype(float)
-        cm = get_cmap("managua")
+        #cm = get_cmap("managua")
+        cm = brown_to_light_blue_cb_friendly
     return cm, values, vrange
 
 
