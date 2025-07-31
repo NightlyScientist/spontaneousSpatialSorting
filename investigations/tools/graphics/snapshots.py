@@ -11,12 +11,16 @@ from functools import partial
 from tools.graphics.nematics import fieldSnapshot, defects_from_Q
 from matplotlib.colors import LinearSegmentedColormap
 
-brown_rgb = (89/255, 168/255, 217/255)   # RGB for #994F00
-light_blue_rgb = (127/255, 73/255, 23/255)  # RGB for #006CD1# Define a custom colormap that transitions from brown to light blue
+brown_rgb = (89 / 255, 168 / 255, 217 / 255)  # RGB for #994F00
+light_blue_rgb = (
+    127 / 255,
+    73 / 255,
+    23 / 255,
+)  # RGB for #006CD1# Define a custom colormap that transitions from brown to light blue
 
 brown_to_light_blue_cb_friendly = LinearSegmentedColormap.from_list(
     "brown_lightblue_cb", [brown_rgb, light_blue_rgb]
-) # RGB for #56B4E9 (colorblind-friendly light blue)
+)  # RGB for #56B4E9 (colorblind-friendly light blue)
 
 
 def colorSelector(colorby, data):
@@ -65,7 +69,7 @@ def colorSelector(colorby, data):
     elif colorby == "stale":
         uptake = 1.0 - data.stale.astype(float)
         vrange = [0.0, 1.0]
-        values = uptake 
+        values = uptake
         cm = get_cmap("gnuplot")
     elif colorby == "grains":
         grain_id, _, _, _ = data.grains()
@@ -81,7 +85,7 @@ def colorSelector(colorby, data):
         cm = get_cmap("hsv")
     else:
         values = data.color2.astype(float)
-        #cm = get_cmap("managua")
+        # cm = get_cmap("managua")
         cm = brown_to_light_blue_cb_friendly
     return cm, values, vrange
 
@@ -104,26 +108,29 @@ def drawRods(
     fig, ax = plt.subplots(figsize=(10, 10))
     fig.tight_layout()
     ax.set_aspect("equal")
-    ax.tick_params(axis='both', labelsize=20)
+    ax.tick_params(axis="both", labelsize=20)
 
     data = extract_data(datapath, time)
     cm, values, vrange = colorSelector(colorby, data)
 
+    if hasattr(data, "cell_r"):
+        R = data.cell_r
+    else:
+        R = np.full(data.x.shape, data.r)
+
     iterateRods(
-        ax,
-        cm(values),
-        data.x,
-        data.y,
-        data.ex,
-        data.ey,
-        0.95 * data.l,
-        data.phi,
-        data.r,
+        ax, cm(values), data.x, data.y, data.ex, data.ey, 0.95 * data.l, data.phi, R
     )
 
-    tmax = max(max(abs(data.x)), max(abs(data.y))) + 2 * data.thickness
+    # tmax = max(max(abs(data.x)), max(abs(data.y))) + 2 * data.thickness
+    padding_ = 2 * np.maximum(data.division_length_1, data.division_length_2)
+    x_min = np.min(data.x) - 2 * padding_
+    x_max = np.max(data.x) + 2 * padding_
+    y_min = np.min(data.y) - 2 * padding_
+    y_max = np.max(data.y) + 2 * padding_
 
-    plt.axis([-tmax, tmax, -tmax, tmax])
+    plt.axis([x_min, x_max, y_min, y_max])
+    # plt.axis([-tmax, tmax, -tmax, tmax])
 
     if show_defects:
         data.nematicField(n=pixel_number)
@@ -160,22 +167,32 @@ def iterateRods(ax, coloring, x, y, ex, ey, l, phi, R, resp=0.01):
 
     for i in range(0, np.size(x)):
         color = coloring[i]
-        x1, y1 = (x[i] - (0.5 * l[i] - r) * ex[i], y[i] - (0.5 * l[i] - r) * ey[i])
-        x2, y2 = (x[i] + (0.5 * l[i] - r) * ex[i], y[i] + (0.5 * l[i] - r) * ey[i])
+        x1, y1 = (
+            x[i] - (0.5 * l[i] - r[i]) * ex[i],
+            y[i] - (0.5 * l[i] - r[i]) * ey[i],
+        )
+        x2, y2 = (
+            x[i] + (0.5 * l[i] - r[i]) * ex[i],
+            y[i] + (0.5 * l[i] - r[i]) * ey[i],
+        )
 
         angle = np.arctan2(ey[i], ex[i])
         epx = -np.sin(angle)
         epy = np.cos(angle)
 
-        c1 = Circle((x1, y1), r, color=color)
-        c2 = Circle((x2, y2), r, color=color)
+        c1 = Circle((x1, y1), r[i], color=color)
+        c2 = Circle((x2, y2), r[i], color=color)
 
         perp_angle = angle / (2.0 * np.pi) * 360.0
 
-        xr = x[i] - (0.5 * l[i] - r) * ex[i] - epx * r
-        yr = y[i] - (0.5 * l[i] - r) * ey[i] - epy * r
+        xr = x[i] - (0.5 * l[i] - r[i]) * ex[i] - epx * r[i]
+        yr = y[i] - (0.5 * l[i] - r[i]) * ey[i] - epy * r[i]
         rect = Rectangle(
-            (xr, yr), width=l[i] - 2 * r, height=2 * r, angle=perp_angle, color=color
+            (xr, yr),
+            width=l[i] - 2 * r[i],
+            height=2 * r[i],
+            angle=perp_angle,
+            color=color,
         )
         for artist in [c2, rect, c1]:
             ax.add_artist(artist)
