@@ -36,6 +36,8 @@ def getattr_(obj, attr_name, dtype: Type[Any] = int):
     data = getattr(obj, attr_name, None)
     if data is not None:
         data = np.array(data, dtype=dtype)
+    else:
+        data = np.zeros(0, dtype=dtype)
     return data
 
 
