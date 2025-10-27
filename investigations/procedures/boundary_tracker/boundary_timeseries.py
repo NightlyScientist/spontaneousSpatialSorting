@@ -25,16 +25,23 @@ fig, ax = plt.subplots(figsize=(10, 6))
 ax.set_xlabel("area")
 ax.set_ylabel("signed periphery distance")
 
+data_table = dict()
+
 for sim in sims:
     files = list(glob.glob(os.path.join(path, sim, "*.csv")))
     
     opts_index = 0 if "opts" in files[0] else 1 
     opts = process_opts(os.path.join(path, sim, files[opts_index]))
+    print(opts["thickness_1"], opts["thickness_2"], opts["division_length_1"], opts["division_length_2"])
 
     if "passive_ring" != opts["initial_type"]:
         print(f"Skipping {sim} due to no passive ring condition.")
         continue
 
+    files = sorted(files, key=lambda x: os.path.getmtime(x))
+    print(files[-1])
+
+    continue
     timeseries = pd.read_csv(os.path.join(path, sim, files[1-opts_index]))
 
     arr = np.array(timeseries.mean_signed_distance.values)
@@ -57,10 +64,11 @@ for sim in sims:
 
     area = length_2 * thickness_2
 
-    if opts["max_aspect_ratio_1"] > 4:
-        print(f"Skipping {sim} due to max aspect ratio condition.")
-        continue
+    #if opts["max_aspect_ratio_1"] > 4:
+    #    print(f"Skipping {sim} due to max aspect ratio condition.")
+    #    continue
 
+    continue
     ax.errorbar(area, dist, yerr=dist_std, fmt="o", label=sim)
     #ax.errorbar(thickness_2 / thickness_1, dist, yerr=dist_std, fmt="o", label=sim)
 
