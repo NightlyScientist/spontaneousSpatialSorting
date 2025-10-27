@@ -104,6 +104,7 @@ def drawRods(
     colorby="angle",
     show_defects=False,
     pixel_number=100,
+    opts=None,
 ):
     fig, ax = plt.subplots(figsize=(10, 10))
     fig.tight_layout()
@@ -150,6 +151,20 @@ def drawRods(
     cb = plt.colorbar(sm, cax=colorbar_axes)
     cb.set_ticks([v_min, v_max])
     cb.ax.tick_params(labelsize=22)
+
+    # show time at top-left in axes coordinates
+    if opts is not None and "initial_cells" in opts:
+        time_ = np.log2(len(data.x) / int(opts["initial_cells"]))
+        ax.text(
+            0.01,
+            0.98,
+            f"t = {time_}",
+            transform=ax.transAxes,
+            fontsize=22,
+            va="top",
+            ha="left",
+            color="k",
+        )
 
     if hidedecoration:
         ax.set_xticks([])
