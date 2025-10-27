@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from importlib import reload
 from tools.dataAPI.datamodel import DataModel
 import tools.graphics.snapshots as snaps
-reload(snaps)
 
 plt.style.use("fast")
 #%%
@@ -33,12 +32,14 @@ colorOptions = [
 opts
 
 # %%
+reload(snaps)
 interact(
     snaps.drawRods,
     time=times,
     datapath=fixed(dataPath),
     imgPath=fixed(""),
     colorby=colorOptions,
+    opts=fixed(opts),
 )
 
 # %%
