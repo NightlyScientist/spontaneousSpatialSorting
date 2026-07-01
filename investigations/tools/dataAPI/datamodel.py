@@ -9,9 +9,13 @@ class DataModel:
         df = pd.read_csv(f"{dataPath}/{time}.csv", header=0)
 
         # .data fields from simuation
-        keys = ["x", "y", "ex", "ey", "l", "color", "color2", "fx", "fy", "g", "splits", "id_1", "id_2", "ancestors", "ancestor", "gadj", "stale"]
+        keys = ["x", "y", "ex", "ey", "l", "color", "color2", "fx", "fy", "g", 
+                "splits", "id_1", "id_2", "ancestors", "ancestor", "gadj", "stale"]
         for key in keys:
-            setattr(self, key, df[key].values)
+            if key in df.columns:
+                setattr(self, key, df[key].values)
+            else:
+                setattr(self, key, np.zeros(len(df)))
 
 
         # .set phi in range [0, 2pi)
@@ -72,7 +76,7 @@ class DataModel:
             map(
                 lambda t: int(t.split(".")[0]),
                 filter(
-                    lambda t: "opts" not in t and t.endswith(".csv"),
+                    lambda t: "opts" not in t and t.endswith(".csv") and not t.startswith("._"),
                     os.listdir(dataPath),
                 ),
             )

@@ -10,7 +10,7 @@ def extract_times(dataPath: str):
         map(
             lambda t: int(t.split(".")[0]),
             filter(
-                lambda t: "opts" not in t and t.endswith(".csv"),
+                lambda t: "opts" not in t and t.endswith(".csv") and not t.startswith("._"),
                 os.listdir(dataPath),
             ),
         )
