@@ -12,7 +12,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from routines.parameterTable import parameterTable
 import argparse
 from tools.dataAPI.datamodel import DataModel
+from collections import namedtuple
 
+# %%
 
 reload(ancestorTracker)
 
@@ -34,13 +36,20 @@ except:
 
 basePath = args.basePath
 
+# %%
 # read csv from path
 df = parameterTable(basePath)
 
 # %%
 reload(ancestorTracker)
 sample_path = df.basePath.values[3]
-trajectories = ancestorTracker.fetch_trajectories(sample_path)
+Row = namedtuple("Row", df.columns.tolist())
+row = Row(*df.iloc[3].tolist())
+sample_path = row.basePath
+
+# %%
+alpha = 0.2
+trajectories = ancestorTracker.fetch_trajectories(sample_path, alpha=alpha)
 
 # %%
 def color_map(traj, option, cmap="coolwarm"):
@@ -65,7 +74,7 @@ def color_map(traj, option, cmap="coolwarm"):
     return cm, colors, vrange
 
 
-def apply_colorbar(ax, cm, vrange):
+def apply_colorbar(ax, cm, vrange, label=""):
     v_min, v_max = vrange
     norm = mpl.colors.Normalize(vmin=v_min, vmax=v_max)
     sm = plt.cm.ScalarMappable(cmap=cm, norm=norm)
@@ -73,6 +82,8 @@ def apply_colorbar(ax, cm, vrange):
     colorbar_axes = divider.append_axes("right", size="5%", pad=0.1)
     cb = plt.colorbar(sm, cax=colorbar_axes, orientation="vertical")
     cb.set_ticks([v_min, v_max])
+    if label:
+        cb.set_label(label)
     return cb
 
 
@@ -88,7 +99,7 @@ def sample_image(ax, trajectories, option="radial", break_point=25):
 
         R = 0.1 / 2
         l = 6 * R * np.ones(x.size)
-        snaps.iterateRods(ax, colors, x, y, ex, ey, l, None, R, resp=0.01)
+        # snaps.iterateRods(ax, colors, x, y, ex, ey, l, None, R, resp=0.01)
         ax.scatter(x, y, c=colors, s=1)
 
         if counter > break_point:
@@ -100,7 +111,9 @@ def sample_image(ax, trajectories, option="radial", break_point=25):
 fig, (ax, sub) = plt.subplots(ncols=2, figsize=(20, 10))
 
 cm, vrange = sample_image(ax, trajectories, "front", break_point=100)
-cb = apply_colorbar(ax, cm, vrange)
+cb = apply_colorbar(
+    ax, cm, vrange, label="Front Displacement (normalized by cell size)"
+)
 
 opts, times = DataModel.extract_times(sample_path)
 _data, _ = ancestorTracker.fetch_data(sample_path, times)
@@ -113,6 +126,13 @@ cb.set_label("Radial Alignment", fontsize=20)
 ax.set_ylabel("y", fontsize=20)
 ax.set_xlabel("x", fontsize=20)
 plt.show()
+
+# %%
+fig, ax = plt.subplots(figsize=(10, 10))
+for t in trajectories:
+    t_scale = 0.5 * (row.division_time_1 + row.division_time_2) / row.time_step
+    disp = t.front_displacement / 0.1
+    ax.plot(t.time, disp, alpha=0.5)
 
 
 # %%
