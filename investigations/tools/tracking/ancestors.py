@@ -43,6 +43,7 @@ def fetch_trajectories(dataPath, alpha=0.2):
     return conform(history, alleleMapping)
 
 
+
 def conform(history, alleleMapping):
     trajectories = []
     keys = sorted(history.keys(), reverse=True)
@@ -59,6 +60,8 @@ def conform(history, alleleMapping):
             np.empty(len(keys)),
         )
         for k in keys:
+            #if not (ith_cell in history[k] and history[k][ith_cell] is not None):
+                #continue
             x[k] = history[k][ith_cell][1]
             y[k] = history[k][ith_cell][2]
             ex[k] = history[k][ith_cell][3]
@@ -69,7 +72,7 @@ def conform(history, alleleMapping):
             t[k] = history[k][ith_cell][10]
             d_f[k] = history[k][ith_cell][11]
 
-        population_label = alleleMapping[allele[0]]
+        population_label = alleleMapping.get(allele[0], 0)
         trajectories.append(
             Trajectory(x, y, ex, ey, l, allele, r_order, t, d_f, population_label)
         )
@@ -91,7 +94,7 @@ def fetch_boundary_cells(dataPath, times, alpha=0.2):
 
     # construct alpha shape
     points = np.column_stack((ref_data.x, ref_data.y))
-    alpha_shape = alphashape.alphashape(points, alpha=0.2)
+    alpha_shape = alphashape.alphashape(points, alpha=alpha)
 
     # Extract boundary points from alpha shape
     coords = np.array(alpha_shape.exterior.coords.xy)
@@ -137,8 +140,8 @@ def create_intial_snapshot(dataPath, times, boundary_points):
     ]
 
     boundary_coords = fetch_boundary_coords(dataPath, times, indx)
-    x = np.array([cell[1] for cell in cell_data])
-    y = np.array([cell[2] for cell in cell_data])
+    x = ref_data.x[boundary_points]
+    y = ref_data.y[boundary_points]
     distances_front = perpendicular_distance(boundary_coords, x, y)
     for i in range(len(cell_data)):
         cell_data[i].append(distances_front[i])
